@@ -1,43 +1,24 @@
-// Pretty Woman · «Satén»: pliegues de seda rosa generados en un canvas pequeño y escalados (el cursor los ondula),
-// la caligrafía se escribe al cargar y la cita se arma como un mensaje de WhatsApp
+// Pretty Woman · «Maison»: dos reels de Diana se destapan sobre ciruela (el retrato y, encima, el círculo con las uñas),
+// la caligrafía de la marca se escribe detrás y la cita se arma como un mensaje de WhatsApp
 (() => {
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const L = () => document.documentElement.lang;
   const T = (es, ca, en) => (L() === 'ca' ? ca : L() === 'en' ? en : es);
   const WA = 'https://wa.me/34605448431?text=';
 
-  function satin() {
-    const cv = document.getElementById('satin'), g = cv.getContext('2d'), hero = document.getElementById('hero');
-    const sw = 160, sh = 100, off = document.createElement('canvas'); off.width = sw; off.height = sh;
-    const og = off.getContext('2d'), img = og.createImageData(sw, sh), p = img.data;
-    let W, H, vis = true, mx = .5, my = .5, tx = .5, ty = .5;
-    const size = () => { const r = cv.getBoundingClientRect(); W = cv.width = Math.round(r.width); H = cv.height = Math.round(r.height); };
-    size(); new ResizeObserver(size).observe(cv);
-    new IntersectionObserver(([e]) => (vis = e.isIntersecting)).observe(cv);
-    hero.addEventListener('pointermove', (e) => { const r = hero.getBoundingClientRect(); tx = (e.clientX - r.left) / r.width; ty = (e.clientY - r.top) / r.height; });
-    const A = [246, 228, 227], B = [233, 184, 189], C = [255, 250, 248], D = [196, 140, 156];
-    const frame = (t) => {
-      t *= .00035; mx += (tx - mx) * .04; my += (ty - my) * .04;
-      for (let y = 0, i = 0; y < sh; y++) for (let x = 0; x < sw; x++, i += 4) {
-        const u = x / sw, v = y / sh, dx = u - mx, dy = v - my, bump = Math.exp(-(dx * dx + dy * dy) * 18) * 1.4;
-        const f = Math.sin(u * 7 + t * 3 + Math.sin(v * 4 + t * 2) * 2.2 + bump) * .6 + Math.sin(v * 9 - t * 2.4 + u * 3) * .4;
-        const s = .5 + .5 * f, hi = Math.max(0, s - .82) * 5.5, lo = Math.max(0, .25 - s) * 3;
-        for (let k = 0; k < 3; k++) p[i + k] = (B[k] + (A[k] - B[k]) * s) * (1 - hi) + C[k] * hi - (A[k] - D[k]) * lo;
-        p[i + 3] = 255;
-      }
-      og.putImageData(img, 0, 0); g.imageSmoothingQuality = 'high'; g.drawImage(off, 0, 0, W, H);
-    };
-    if (reduce) { frame(0); return; }
-    const loop = (t) => { if (vis) frame(t); requestAnimationFrame(loop); };
-    requestAnimationFrame(loop);
-  }
-
   function intro() {
     if (reduce || typeof gsap === 'undefined') return;
-    gsap.fromTo('.script', { clipPath: 'inset(0 100% 0 0)', filter: 'blur(6px)' }, { clipPath: 'inset(0 0% 0 0)', filter: 'blur(0px)', duration: 1.8, ease: 'power2.inOut', delay: .1, clearProps: 'filter' });
-    gsap.fromTo('.card', { y: 120, opacity: 0, rotate: 0 }, { y: 0, opacity: 1, rotate: (i) => [-8, 7, -4][i], duration: 1.6, ease: 'expo.out', stagger: .12, delay: .35 });
-    gsap.utils.toArray('.card').forEach((c, i) => gsap.to(c, { y: i % 2 ? -18 : 16, duration: 3 + i, yoyo: true, repeat: -1, ease: 'sine.inOut', delay: 2 }));
-    gsap.to('.hero-in', { yPercent: -14, opacity: .3, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    gsap.fromTo('.script', { clipPath: 'inset(0 100% 0 0)' }, { clipPath: 'inset(0 0% 0 0)', duration: 2.4, ease: 'power2.inOut', delay: .1 });
+    gsap.fromTo('#v1', { clipPath: 'inset(100% 0% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.6, ease: 'expo.inOut', delay: .15 });
+    gsap.fromTo('#v1 video', { scale: 1.3 }, { scale: 1, duration: 2.4, ease: 'expo.out', delay: .15 });
+    gsap.fromTo('#v2', { scale: 0, rotate: -30 }, { scale: 1, rotate: 0, duration: 1.4, ease: 'expo.out', delay: .9 });
+    gsap.to('#v2', { yPercent: -40, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    gsap.to('.script', { xPercent: -12, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } });
+    if (fine) {
+      const x = gsap.quickTo('#v2', 'x', { duration: 1.2, ease: 'power3.out' }), y = gsap.quickTo('#v2', 'y', { duration: 1.2, ease: 'power3.out' });
+      document.getElementById('hero').addEventListener('pointermove', (e) => { x(((e.clientX / innerWidth) - .5) * -40); y(((e.clientY / innerHeight) - .5) * -30); });
+    }
   }
 
   // ---------- la cita en tres toques ----------
@@ -64,6 +45,6 @@
     document.addEventListener('langchange', render); render();
   }
 
-  function init() { satin(); intro(); cita(); }
+  function init() { intro(); cita(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

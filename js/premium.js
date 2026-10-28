@@ -62,6 +62,27 @@
     });
   }
 
+  // video[data-video]: bucles mudos que solo se reproducen cuando están en pantalla
+  function videos() {
+    const vs = document.querySelectorAll('video[data-video]'); if (!vs.length) return;
+    vs.forEach((v) => { v.muted = true; v.playsInline = true; v.loop = true; });
+    if (reduce) { vs.forEach((v) => { v.removeAttribute('autoplay'); v.pause(); }); return; }
+    const io = new IntersectionObserver((es) => es.forEach((e) => (e.isIntersecting ? e.target.play().catch(() => {}) : e.target.pause())), { threshold: .1 });
+    vs.forEach((v) => io.observe(v));
+  }
+
+  // body[data-cursor]: anillo que sigue al ratón y crece sobre enlaces y botones
+  function cursor() {
+    if (!fine || reduce || !document.body.hasAttribute('data-cursor')) return;
+    const c = document.createElement('div'); c.className = 'cur'; c.setAttribute('aria-hidden', 'true'); document.body.appendChild(c);
+    let x = -100, y = -100, cx = x, cy = y;
+    addEventListener('pointermove', (e) => { x = e.clientX; y = e.clientY; c.classList.add('on'); }, { passive: true });
+    document.addEventListener('pointerover', (e) => c.classList.toggle('big', !!e.target.closest('a, button, [data-cur]')));
+    document.documentElement.addEventListener('pointerleave', () => c.classList.remove('on'));
+    const tick = () => { cx += (x - cx) * .2; cy += (y - cy) * .2; c.style.transform = `translate3d(${cx}px, ${cy}px, 0)`; requestAnimationFrame(tick); };
+    tick();
+  }
+
   function motion() {
     gsap.registerPlugin(ScrollTrigger);
     // portada: todo entra en el primer segundo
@@ -82,7 +103,7 @@
 
   P.init = () => {
     document.documentElement.classList.add('ready');
-    marquees(); header(); magnetic();
+    marquees(); header(); magnetic(); videos(); cursor();
     if (has()) { lenis(); motion(); }
     document.fonts && document.fonts.ready.then(() => typeof ScrollTrigger !== 'undefined' && ScrollTrigger.refresh());
   };
